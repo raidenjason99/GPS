@@ -1,0 +1,128 @@
+/* jslint browser:true */
+
+var id = null;
+var firstTime = -1;
+var latwill=43.772904;
+var lonwill=-79.507769;
+var xwill=320;
+var ywill=350;
+var latak= 43.7742081;
+var lonak=-79.498333;
+var xak=280;
+var yak=300;
+
+var loc1 = {lat : 43.7730688, lon: -79.5032212,desc:"Vari Hall"};
+var loc2 = {lat: 43.774802 ,lon: -79.5089023, desc: "tait Mckenzie"};
+var loc3 = {lat: 43.77292904, lon: -79.5084321, desc: "petrie Engineering"};
+
+
+var caches=new Array();
+caches[0] = loc1;
+caches[1] = loc2;
+caches[2] = loc3;
+var currentCache=0;
+var indexOfArray=0;
+
+function updateCache(){
+  //currentCache = caches[indexOfArray]
+  currentCache++;
+  if(currentCache==3){
+     currentCache=0;
+
+    //indexOfArray=indexOfArray+1;
+
+  }
+  showCache(caches);
+}
+
+function togglegps() {
+    var button = document.getElementById("togglegps");
+    if (navigator.geolocation) {
+        if (id === null) {
+            id = navigator.geolocation.watchPosition(showPosition, handleError, {enableHighAccuracy : true, timeout: 1000});
+            button.innerHTML = "STOP GPS";
+            firstTime = -1;
+        } else {
+            navigator.geolocation.clearWatch(id);
+            id = null;
+            button.innerHTML = "START GPS";
+        }
+    } else {
+        alert("NO GPS AVAILABLE");
+    }
+}
+
+
+
+
+function handleError(error) {
+    var errorstr = "Really unknown error";
+    switch (error.code) {
+    case error.PERMISSION_DENIED:
+        errorstr = "Permission deined";
+        break;
+    case error.POSITION_UNAVAILABLE:
+        errorstr = "Permission unavailable";
+        break;
+    case error.TIMEOUT:
+        errorstr = "Timeout";
+        break;
+    case error.UNKNOWN_ERROR:
+        error = "Unknown error";
+        break;
+    }
+    alert("GPS error" + error);
+    document.getElementById("debug").innerHTML = "GPS error " + error + error.code;
+    console.log("GPS error " + error.code);
+
+
+}
+
+function interpolate(gps1, gps2, u1, u2, gps)
+{
+return u1+(u2-u1)*(gps-gps1)/(gps2-gps1);
+      }
+
+
+function showPosition(position) {
+    var lat = document.getElementById("latitude");
+    var long = document.getElementById("longitude");
+    var now = document.getElementById("now");
+    //var debug=document.getElementById("debug");
+    //if (position == null)
+    //{
+    //  console.log("null");
+    //  document.getElementById("debug").innerHTML = "null";
+      //return;
+  //  }
+   latitude.innerHTML = position.coords.latitude;
+   longitude.innerHTML = position.coords.longitude;
+
+   if (firstTime < 0) {
+         firstTime = position.timestamp;
+       }
+     now.innerHTML = position.timestamp - firstTime;
+    //loc1.long;
+    var u =interpolate(latwill,latak,xwill,xak, position.coords.latitude);
+    var v =interpolate(lonwill,lonak,ywill,yak, position.coords.longitude);
+
+
+
+    var debug = document.getElementById("debug")
+    debug.innerHTML = "u:"+u + " " + "v:"+v;
+
+
+    var me = document.getElementById("me")
+    me.style.left= v - 16 +"px"; // longitude
+    me.style.top= u - 16 + "px"  // latitdue
+    //debug.innerHTML=  (u + "" +v);
+  }
+
+
+
+  function showCache(){
+
+    var btarget = interpolate(lonwill,lonak,xwill,xak,caches[currentCache].lon);
+    var atarget = interpolate(latwill,latak,ywill,yak,caches[currentCache].lat);
+    var target = document.getElementById("target");
+    var go = document.getElementById("return");
